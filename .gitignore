@@ -1,4 +1,5 @@
 .DS_Store
+.cache
 .cache-*
 config.ini
 start.sh
@@ -7,3 +8,4 @@ logs/.DS_Store
 __pycache__/
 *.py[cod]
 venv
+.env

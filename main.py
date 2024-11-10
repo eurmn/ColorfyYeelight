@@ -1,10 +1,10 @@
-import os
-import sys
-import argparse
 import configparser
+import os
+import argparse
 from time import sleep
 from current_spotify_playback import CurrentSpotifyPlayback, NoArtworkException
 from spotify_background_color import SpotifyBackgroundColor
+from yeelight_controller import YeelightController
 
 
 CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
@@ -29,35 +29,9 @@ def main(k, color_tol, size):
     """
     config = configparser.ConfigParser()
     config.read('config.ini')
-    WS281X = config['WS281X']
-    WLED = config['WLED']
-    if WS281X['is_active'] == 'True':
-        from ws281x_controller import WS281XController
-        LED_COUNT = int(WS281X['led_count'])
-        LED_PIN = int(WS281X['led_pin'])
-        LED_BRIGHTNESS = int(WS281X['led_brightness'])
-        LED_FREQ_HZ = int(WS281X['led_freq_hz'])
-        LED_DMA = int(WS281X['led_dma'])
-        LED_INVERT = WS281X['led_invert']
-        LED_CHANNEL = int(WS281X['led_channel'])
-        if LED_INVERT == 'True':
-            LED_INVERT = True
-        else:
-            LED_INVERT = False
-        led = WS281XController(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA,
-                               LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-    elif WLED['is_active'] == 'True':
-        from wled_controller import WLEDController
-        wled_device_ip = WLED['device_ip']
-        led = WLEDController(wled_device_ip)
-    else:
-        from led_controller import LEDController
-        GPIO_PINS = config['GPIO PINS']
-        red_pin = int(GPIO_PINS['red_pin'])
-        green_pin = int(GPIO_PINS['green_pin'])
-        blue_pin = int(GPIO_PINS['blue_pin'])
-        led = LEDController(red_pin, green_pin, blue_pin)
-    name = config['CHROMECAST']['name']
+    host = config['YEELIGHT']['device_ip']
+
+    bulb = YeelightController(host)
 
     spotify = CurrentSpotifyPlayback(CLIENT_ID, CLIENT_SECRET,
                                      REDIRECT_URI, REFRESH_TOKEN)
@@ -66,26 +40,20 @@ def main(k, color_tol, size):
     try:
         while True:
             spotify.update_current_playback()
-            if spotify.connected_to_chromecast(name):
-                if spotify.new_song(old_song_id):
-                    try:
-                        artwork = spotify.get_artwork()
-                        background_color = SpotifyBackgroundColor(
-                            img=artwork, image_processing_size=size)
-                        r, g, b = background_color.best_color(
-                            k=k, color_tol=color_tol)
-                    except NoArtworkException:
-                        r, g, b = 255, 255, 255
-                    led.set_color(r, g, b)
-                    old_song_id = spotify.get_current_song_id()
-            else:
-                old_song_id = ''
-                r, g, b = led.get_color()
-                if r != 0 or g != 0 or b != 0:
-                    led.set_color(0, 0, 0)
+            if spotify.new_song(old_song_id):
+                try:
+                    artwork = spotify.get_artwork()
+                    background_color = SpotifyBackgroundColor(
+                        img=artwork, image_processing_size=size)
+                    r, g, b = background_color.best_color(
+                        k=k, color_tol=color_tol)
+                except NoArtworkException:
+                    r, g, b = 255, 255, 255
+                bulb.set_color(r, g, b)
+                old_song_id = spotify.get_current_song_id()
             sleep(2)
     except KeyboardInterrupt:
-        led.set_color(0, 0, 0)
+        bulb.set_color(0, 0, 0)
 
 
 if __name__ == '__main__':
