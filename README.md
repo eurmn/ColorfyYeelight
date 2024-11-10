@@ -1,17 +1,9 @@
 # Colorfy
-A small program written in Python 3 that sets the color of your LED-strip to the background color that Spotify sets when playing on a Chromecast. It analyzes the album artwork and computes the correct background color (same as Spotify sets) in about 80 % of the cases.
+A small program written in Python 3 that sets the color of ~~your LED-strip~~ Yeelight bulb to the background color that Spotify sets when playing on a Chromecast. It analyzes the album artwork and computes the correct background color (same as Spotify sets) in about 80 % of the cases.
 
 The program uses k-means clustering to find distinct colors in the artwork and then computes a colorfulness index as defined by [Hasler and Süsstrunk (2003)](https://infoscience.epfl.ch/record/33994/files/HaslerS03.pdf) for each of the colors. The color with the highest index is then set to the LED-strip if it is greater than or equal to a given colorfulness tolerance.
 
-## Images
-### Spotify background color
-<img src="images/rhcp.jpg">
-<p float="center">
-  <img src="images/color_gradient.gif" width="481" height="271"/>
-  <img src="images/5sos.jpg" width="409" height="271"/>
-</p>
-<img src="images/khalid.jpg">
-<img src="images/falco.jpg">
+Forked from [Colorfy](https://github.com/davidkrantz/Colorfy) to be compatible with Xiaomi Yeelight smart bulb.
 
 ### Web app
 Simple web app built with Flask to easily switch between setting your LED-strip to the color based on your current Spotify playback, set manually using a color picker or if it should be turned off.
